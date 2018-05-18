@@ -1,0 +1,7 @@
+<library path="lib/libzerobot_plugin">
+  <class name="zerobot_plugin/Teleop" type="zerobot_nodelet::Teleop" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+</library>

@@ -1,0 +1,41 @@
+<library path="lib/libzerobot_driver">
+  <class name="zerobot_driver/DiffDrive" type="zerobot_nodelet::DiffDrive" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Logger" type="zerobot_nodelet::Logger" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Odometer" type="zerobot_nodelet::Odometer" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Params" type="zerobot_nodelet::Params" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Ranger" type="zerobot_nodelet::Ranger" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Serial" type="zerobot_nodelet::Serial" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Test" type="zerobot_nodelet::Test" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_driver/Twister" type="zerobot_nodelet::Twister" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+</library>

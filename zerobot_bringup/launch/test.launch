@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="base_manager" default="manager"/>
+
+  <node pkg="nodelet" type="nodelet" name="$(arg base_manager)" args="manager" output="screen"/>
+
+  <node pkg="nodelet" type="nodelet" name="logger" args="load zerobot_driver/Logger $(arg base_manager)" output="screen"/>
+
+  <node pkg="nodelet" type="nodelet" name="test" args="load zerobot_driver/Test $(arg base_manager)" output="screen">
+    <remap from="test/cmd_vel" to="cmd_vel"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="serial" args="load zerobot_driver/Serial $(arg base_manager)" output="screen">
+    <param name="serial_port" type="str" value="/dev/ttyUSB0"/>
+    <param name="baud_rate" type="int" value="921600"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="params" args="load zerobot_driver/Params $(arg base_manager)" output="screen">
+    <param name="service_timeout" type="int" value="100"/>
+  </node>
+
+  <!-- <node pkg="nodelet" type="nodelet" name="ranger" args="load zerobot_driver/Ranger $(arg base_manager)" output="screen">
+    <remap from="ranger/range" to="range"/>
+  </node> -->
+
+  <!-- <node pkg="nodelet" type="nodelet" name="odometer" args="load zerobot_driver/Odometer $(arg base_manager)" output="screen">
+    <remap from="odometer/odom" to="odom"/>
+  </node> -->
+
+  <!-- <node pkg="nodelet" type="nodelet" name="motion_control" args="load zerobot_driver/MotionControl $(arg base_manager)" output="screen">
+    <remap from="motion_control/cmd_vel" to="cmd_vel"/>
+  </node> -->
+
+  <node pkg="nodelet" type="nodelet" name="teleop" args="load zerobot_plugin/Teleop $(arg base_manager)" output="screen">
+    <remap from="teleop/joy" to="joy"/>
+    <remap from="teleop/twist" to="cmd_vel"/>
+  </node>
+
+  <node pkg="joy" type="joy_node" name="joy" output="screen">
+    <param name="dev" type="str" value="/dev/input/js1"/>
+    <param name="deadzone" type="double" value="0.1"/>
+    <param name="coalesce_interval" type="double" value="0.02"/>
+    <param name="autorepeat_rate" type="double" value="1"/>
+  </node>
+
+  <!-- <node pkg="rqt_graph" type="rqt_graph" name="rqt_graph"/> -->
+
+  <!-- <node pkg="rviz" type="rviz" name="rviz"/> -->
+
+</launch>
