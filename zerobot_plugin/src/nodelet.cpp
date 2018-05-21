@@ -62,11 +62,11 @@ public:
   }
 
 private:
-  boost::shared_ptr<zerobot_plugin::Teleop> ptr_;
+  boost::shared_ptr<zerobot_plugin::WitImu> ptr_;
 
   virtual void onInit()
   {
-    ptr_ = boost::make_shared<zerobot_plugin::Teleop>(getMTNodeHandle(), getMTPrivateNodeHandle());
+    ptr_ = boost::make_shared<zerobot_plugin::WitImu>(getMTNodeHandle(), getMTPrivateNodeHandle());
   }
 };
 
