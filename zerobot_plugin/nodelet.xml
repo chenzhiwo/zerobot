@@ -1,5 +1,15 @@
 <library path="lib/libzerobot_plugin">
+  <class name="zerobot_plugin/Bridge" type="zerobot_nodelet::Bridge" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
   <class name="zerobot_plugin/Teleop" type="zerobot_nodelet::Teleop" base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="zerobot_plugin/WitImu" type="zerobot_nodelet::WitImu" base_class_type="nodelet::Nodelet">
     <description>
     </description>
   </class>

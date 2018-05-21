@@ -42,6 +42,7 @@ MsgRange;
 
 typedef struct MSG_PACKED
 {
+  float duration;
   float data[4];
 }
 MsgEncoder;

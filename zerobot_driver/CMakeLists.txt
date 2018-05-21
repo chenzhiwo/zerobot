@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(zerobot_driver)
 
 set(CMAKE_CXX_STANDARD 11)
-# add_compile_options(-Wall -Wextra -Wno-sign-compare)
+
+add_compile_options(-Wall -Wextra)
 
 set(MESSAGE_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/msg.h)
 

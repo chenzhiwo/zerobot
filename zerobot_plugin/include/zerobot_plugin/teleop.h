@@ -15,8 +15,8 @@ public:
   Teleop(ros::NodeHandle node_handle, ros::NodeHandle private_node_handle)
     : nh_(node_handle), pnh_(private_node_handle)
   {
-    joy_subscriber_ = pnh_.subscribe("joy", 1, &Teleop::subJoyCallback, this);
     twist_publisher_ = pnh_.advertise<geometry_msgs::Twist>("twist", 1);
+    joy_subscriber_ = pnh_.subscribe("joy", 1, &Teleop::subJoyCallback, this);
   }
 
   ~Teleop()
@@ -27,8 +27,8 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
 
-  ros::Subscriber joy_subscriber_;
   ros::Publisher twist_publisher_;
+  ros::Subscriber joy_subscriber_;
 
   inline bool notEqualZero(double value)
   {
@@ -42,9 +42,8 @@ private:
     twist.angular.x = 0.0;
     twist.angular.y = 0.0;
 
-    twist.linear.x = 1.0 * joy->axes[1];
-    twist.angular.z = 1.0 * M_PI * joy->axes[0];
-    twist.linear.y = 1.0 * joy->axes[3];
+    twist.linear.x = 0.4 * joy->axes[1];
+    twist.angular.z = 0.5 * M_PI * joy->axes[0];
 
     twist_publisher_.publish(twist);
   }

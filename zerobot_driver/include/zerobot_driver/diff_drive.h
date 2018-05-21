@@ -51,27 +51,17 @@ private:
 
   void encoderCallback(void* payload)
   {
-    static bool first_run = true;
-    static ros::Time last_time;
     MsgEncoder* encoder = reinterpret_cast<MsgEncoder*>(payload);
     ros::Time now = ros::Time::now();
-    ros::Duration delta_time = now - last_time;
-
-    if (first_run)
-    {
-      last_time = ros::Time::now();
-      first_run = false;
-      return;
-    }
 
     // Robot coordinate.
     double vel_x = (encoder->data[0] + encoder->data[1]) / 2;
     double vel_theta = (encoder->data[0] - encoder->data[1]) / wheel_distance_;
 
     // Odom coordinate.
-    double delta_x = vel_x * cos(theta_) * delta_time.toSec();
-    double delta_y = vel_x * sin(theta_) * delta_time.toSec();
-    double delta_theta = vel_theta * delta_time.toSec();
+    double delta_x = vel_x * cos(theta_) * encoder->duration;
+    double delta_y = vel_x * sin(theta_) * encoder->duration;
+    double delta_theta = vel_theta * encoder->duration;
 
     x_ += delta_x;
     y_ += delta_y;
@@ -108,8 +98,6 @@ private:
     transform.transform.rotation.z = rot.z();
     transform.transform.rotation.w = rot.w();
     tf_broadcaster_.sendTransform(transform);
-
-    last_time = now;
   }
 };
 

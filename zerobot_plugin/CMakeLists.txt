@@ -3,6 +3,8 @@ project(zerobot_plugin)
 
 set(CMAKE_CXX_STANDARD 11)
 
+add_compile_options(-Wall -Wextra)
+
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
@@ -10,13 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslint
   sensor_msgs
-  zerobot_driver
 )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES zerobot_plugin
-  CATKIN_DEPENDS geometry_msgs nav_msgs nodelet roscpp roslint sensor_msgs zerobot_driver
+  CATKIN_DEPENDS geometry_msgs nav_msgs nodelet roscpp roslint sensor_msgs
 )
 
 include_directories(
@@ -25,6 +26,9 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
+  include/zerobot_plugin/bridge.h
+  include/zerobot_plugin/teleop.h
+  include/zerobot_plugin/wit_imu.h
   src/nodelet.cpp
 )
 

@@ -18,7 +18,7 @@ class Serial : zerobot_driver::Plugin
 public:
 #pragma pack(push)
 #pragma pack(1)
-  typedef __attribute__((aligned(1))) struct
+  typedef struct
   {
     uint8_t start;
     uint8_t topic_id;
@@ -39,6 +39,10 @@ public:
 
     serial_.open(serial_port);
     serial_.set_option(boost::asio::serial_port::baud_rate(baud_rate));
+    serial_.set_option(boost::asio::serial_port::character_size(8));
+    serial_.set_option(boost::asio::serial_port::flow_control(boost::asio::serial_port::flow_control::none));
+    serial_.set_option(boost::asio::serial_port::parity(boost::asio::serial_port::parity::none));
+    serial_.set_option(boost::asio::serial_port::stop_bits(boost::asio::serial_port::stop_bits::one));
 
     send_thread_ = boost::thread(&Serial::sendThread, this);
     recv_thread_ = boost::thread(&Serial::recvThread, this);
@@ -104,13 +108,18 @@ private:
     SerialHeader header;
     uint8_t buffer[256];
     uint16_t checksum;
+    boost::system::error_code ec;
 
     std::array<boost::asio::mutable_buffer, 2> buffers;
     buffers[1] = boost::asio::buffer(&checksum, sizeof(checksum));
 
     while (ros::ok())
     {
-      boost::asio::read(serial_, boost::asio::buffer(&header.start, 1));
+      boost::asio::read(serial_, boost::asio::buffer(&header.start, 1), ec);
+      if (ec)
+      {
+        ROS_WARN_STREAM(ec.message());
+      }
       boost::this_thread::interruption_point();
 
       if (header.start != START_SIGN)
@@ -118,7 +127,11 @@ private:
         continue;
       }
 
-      boost::asio::read(serial_, boost::asio::buffer(&header.start + 1, sizeof(header) - sizeof(header.start)));
+      boost::asio::read(serial_, boost::asio::buffer(&header.start + 1, sizeof(header) - sizeof(header.start)), ec);
+      if (ec)
+      {
+        ROS_WARN_STREAM(ec.message());
+      }
       boost::this_thread::interruption_point();
 
       if (header.start + header.topic_id + header.length != header.checksum)
@@ -127,7 +140,11 @@ private:
       }
 
       buffers[0] = boost::asio::buffer(buffer, header.length);
-      boost::asio::read(serial_, buffers);
+      boost::asio::read(serial_, buffers, ec);
+      if (ec)
+      {
+        ROS_WARN_STREAM(ec.message());
+      }
       boost::this_thread::interruption_point();
 
       if (crcCCITT(buffer, header.length) != checksum)
@@ -147,6 +164,7 @@ private:
     Buffer buffer;
     SerialHeader header;
     uint16_t checksum;
+    boost::system::error_code ec;
 
     std::array<boost::asio::const_buffer, 3> buffers;
     buffers[0] = boost::asio::buffer(&header, sizeof(header));
@@ -154,17 +172,22 @@ private:
 
     while (ros::ok())
     {
-      if (msgPop(buffer))
+      if (!msgPop(buffer))
       {
-        header.start = START_SIGN;
-        header.topic_id = buffer.tid();
-        header.length = buffer.len();
-        header.checksum = header.start + header.topic_id + header.length;
+        continue;
+      }
+      header.start = START_SIGN;
+      header.topic_id = buffer.tid();
+      header.length = buffer.len();
+      header.checksum = header.start + header.topic_id + header.length;
 
-        checksum = crcCCITT(buffer.payload(), buffer.len());
+      checksum = crcCCITT(buffer.payload(), buffer.len());
 
-        buffers[1] = boost::asio::buffer(buffer.payload(), buffer.len());
-        boost::asio::write(serial_, buffers);
+      buffers[1] = boost::asio::buffer(buffer.payload(), buffer.len());
+      boost::asio::write(serial_, buffers, ec);
+      if (ec)
+      {
+        ROS_WARN_STREAM(ec.message());
       }
     }
   }
