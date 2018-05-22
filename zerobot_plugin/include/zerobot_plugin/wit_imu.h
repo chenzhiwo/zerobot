@@ -34,6 +34,8 @@ public:
   {
     pnh_.param<std::string>("serial_port", serial_port_, "/dev/ttyUSB0");
     pnh_.param<int>("baud_rate", baud_rate_, 115200);
+    pnh_.param<float>("acc_fullscale", acc_fullscale_, 9.7883f * 2.0f);
+    pnh_.param<float>("gyr_fullscale", gyr_fullscale_, 0.01745329251994329577f * 250.0f);
 
     imu_publisher_ = pnh_.advertise<sensor_msgs::Imu>("imu", 128);
     magnet_publisher_ = pnh_.advertise<sensor_msgs::MagneticField>("magnet", 128);
@@ -61,6 +63,9 @@ private:
 
   std::string serial_port_;
   int baud_rate_;
+
+  float acc_fullscale_;
+  float gyr_fullscale_;
 
   ros::Publisher imu_publisher_;
   ros::Publisher magnet_publisher_;
@@ -92,8 +97,8 @@ private:
     sensor_msgs::MagneticField magnet;
     bool acc_ready = false, gyr_ready = false, orient_ready = false, mag_ready = false;
 
-    imu.header.frame_id = "imu";
-    magnet.header.frame_id = "imu";
+    imu.header.frame_id = "imu_link";
+    magnet.header.frame_id = "imu_link";
 
     while (ros::ok())
     {
@@ -116,17 +121,17 @@ private:
       {
         case 0x51:
           // acc
-          imu.linear_acceleration.x = buffer.field0 * (9.7883f * 16.0f / INT16_MAX);
-          imu.linear_acceleration.y = buffer.field1 * (9.7883f * 16.0f / INT16_MAX);
-          imu.linear_acceleration.z = buffer.field2 * (9.7883f * 16.0f / INT16_MAX);
+          imu.linear_acceleration.x = buffer.field0 * acc_fullscale_ / INT16_MAX;
+          imu.linear_acceleration.y = buffer.field1 * acc_fullscale_ / INT16_MAX;
+          imu.linear_acceleration.z = buffer.field2 * acc_fullscale_ / INT16_MAX;
           acc_ready = true;
           break;
 
         case 0x52:
           // gyr
-          imu.angular_velocity.x = buffer.field0 * (0.01745329251994329577f * 250.0f / INT16_MAX);
-          imu.angular_velocity.y = buffer.field1 * (0.01745329251994329577f * 250.0f / INT16_MAX);
-          imu.angular_velocity.z = buffer.field2 * (0.01745329251994329577f * 250.0f / INT16_MAX);
+          imu.angular_velocity.x = buffer.field0 * gyr_fullscale_ / INT16_MAX;
+          imu.angular_velocity.y = buffer.field1 * gyr_fullscale_ / INT16_MAX;
+          imu.angular_velocity.z = buffer.field2 * gyr_fullscale_ / INT16_MAX;
           gyr_ready = true;
           break;
 
