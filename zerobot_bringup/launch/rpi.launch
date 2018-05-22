@@ -2,7 +2,9 @@
 <launch>
   <arg name="base_manager" default="manager"/>
 
-  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="imu_tf" args="0 0 0 0 0 0 base_link imu" output="screen"/> -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="imu_link_tf" args="0 0 0 0 0 0 base_link imu_link" output="screen"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_tf" args="0 0 0.2 0 0 0 base_footprint base_link" output="screen"/>
 
   <node pkg="nodelet" type="nodelet" name="$(arg base_manager)" args="manager" output="screen"/>
 
