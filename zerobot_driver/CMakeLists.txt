@@ -63,7 +63,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_dependencies(${PROJECT_NAME}
-  zerobot_msgs_generate_messages
+  zerobot_msgs_generate_messages_cpp
 )
 
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/*.h)

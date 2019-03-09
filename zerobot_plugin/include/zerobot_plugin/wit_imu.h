@@ -26,7 +26,8 @@ public:
     int16_t field2;
     int16_t field3;
     uint8_t sum;
-  } Buffer;
+  }
+  Buffer;
 #pragma pack(pop)
 
   WitImu(ros::NodeHandle node_handle, ros::NodeHandle private_node_handle)

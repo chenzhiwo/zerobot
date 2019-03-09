@@ -14,6 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+find_package(OpenCV REQUIRED)
+message(STATUS OpenCV_VERSION)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES zerobot_plugin

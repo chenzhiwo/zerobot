@@ -10,10 +10,12 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
+#include <geometry_msgs/Twist.h>
 
 #define START_SIGN 0x55
 
 #define MSG_IMU_TOPIC 1
+#define MSG_CONTROL_TOPIC 2
 
 namespace zerobot_plugin
 {
@@ -30,10 +32,12 @@ public:
     uint8_t topic_id;
     uint8_t length;
     uint8_t checksum;
-  } Header;
+  }
+  NetworkHeader;
 
   typedef struct
   {
+    double time_stamp;
     float gyr_x;
     float gyr_y;
     float gyr_z;
@@ -43,7 +47,15 @@ public:
     float mag_x;
     float mag_y;
     float mag_z;
-  } IMUBuffer;
+  }
+  IMUBuffer;
+
+  typedef struct
+  {
+    float linear_x;
+    float angular_z;
+  }
+  CmdVelMsg;
 #pragma pack(pop)
 
   class Buffer
@@ -85,18 +97,21 @@ public:
   };
 
   Bridge(ros::NodeHandle node_handle, ros::NodeHandle private_node_handle)
-    : nh_(node_handle)
-    , pnh_(private_node_handle)
-    , buffer_(256)
-    , acceptor_(io_srv_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1234))
+    : nh_(node_handle), pnh_(private_node_handle), buffer_(128)
   {
+    twist_publisher_ = pnh_.advertise<geometry_msgs::Twist>("cmd_vel", 128);
     imu_subscriber_ = pnh_.subscribe("imu", 128, &Bridge::imuCallback, this);
     magnet_subscriber_ = pnh_.subscribe("magnet", 128, &Bridge::magnetCallback, this);
+
+    // Fire up all threads.
     network_thread_ = boost::thread(&Bridge::networkThread, this);
+    control_thread_ = boost::thread(&Bridge::controlThread, this);
   }
 
   ~Bridge()
   {
+    control_thread_.interrupt();
+    control_thread_.join();
     network_thread_.interrupt();
     network_thread_.join();
   }
@@ -109,14 +124,17 @@ private:
   boost::condition_variable buffer_cv_;
   boost::circular_buffer<Buffer> buffer_;
 
+  ros::Publisher twist_publisher_;
   ros::Subscriber imu_subscriber_;
   ros::Subscriber magnet_subscriber_;
 
   boost::asio::io_service io_srv_;
-  boost::asio::ip::tcp::acceptor acceptor_;
+
+  ros::Time start_time_;
 
   IMUBuffer imu_buffer_;
   boost::thread network_thread_;
+  boost::thread control_thread_;
 
   bool msgPost(TopicID tid, void* payload, size_t len)
   {
@@ -140,6 +158,14 @@ private:
     return true;
   }
 
+  bool msgClear()
+  {
+    boost::unique_lock<boost::mutex> lock(buffer_mutex_);
+    buffer_.clear();
+    lock.unlock();
+    return true;
+  }
+
   void imuCallback(sensor_msgs::ImuConstPtr imu)
   {
     imu_buffer_.acc_x = imu->linear_acceleration.x;
@@ -155,24 +181,26 @@ private:
     imu_buffer_.mag_x = magnet->magnetic_field.x;
     imu_buffer_.mag_y = magnet->magnetic_field.y;
     imu_buffer_.mag_z = magnet->magnetic_field.z;
+    imu_buffer_.time_stamp = (ros::Time::now() - start_time_).toSec();
     msgPost(MSG_IMU_TOPIC, &imu_buffer_, sizeof(imu_buffer_));
   }
 
   void networkThread()
   {
-    Header header;
+    NetworkHeader header;
     Buffer buffer;
     std::array<boost::asio::const_buffer, 2> buffers;
     buffers[0] = boost::asio::buffer(&header, sizeof(header));
-
-    boost::asio::ip::tcp::socket sock(io_srv_);
     boost::system::error_code ec;
+    boost::asio::ip::tcp::acceptor acceptor(io_srv_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1234));
+    boost::asio::ip::tcp::socket sock(io_srv_);
 
     while (ros::ok())
     {
       ROS_INFO("Wait for client.");
-      acceptor_.accept(sock);
-      boost::this_thread::interruption_point();
+      acceptor.accept(sock);
+      start_time_ = ros::Time::now();
+      msgClear();
       ROS_INFO("Client connected.");
       while (ros::ok())
       {
@@ -190,11 +218,67 @@ private:
         boost::asio::write(sock, buffers, ec);
         if (ec)
         {
-          sock.close();
-          ROS_INFO("Client disconnected.");
           break;
         }
       }
+      sock.close();
+      ROS_INFO("Client disconnected.");
+    }
+  }
+
+  void controlThread()
+  {
+    NetworkHeader header;
+    uint8_t buffer[254];
+    CmdVelMsg* cmd_vel;
+    geometry_msgs::Twist twist;
+    boost::system::error_code ec;
+    boost::asio::ip::tcp::acceptor acceptor(io_srv_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1233));
+    boost::asio::ip::tcp::socket sock(io_srv_);
+
+    while (ros::ok())
+    {
+      ROS_INFO("Wait for control client.");
+      acceptor.accept(sock);
+      ROS_INFO("Control client connected.");
+      while (ros::ok())
+      {
+        boost::asio::read(sock, boost::asio::buffer(&header.start, sizeof(header.start)), ec);
+        if (ec)
+        {
+          break;
+        }
+        if (header.start != START_SIGN)
+        {
+          continue;
+        }
+
+        boost::asio::read(sock, boost::asio::buffer(&header.start + 1, sizeof(header) - sizeof(header.start)), ec);
+        if (ec)
+        {
+          break;
+        }
+        if (header.checksum != header.start + header.topic_id + header.length)
+        {
+          continue;
+        }
+
+        boost::asio::read(sock, boost::asio::buffer(&buffer, header.length), ec);
+        if (ec)
+        {
+          break;
+        }
+
+        if (header.topic_id == MSG_CONTROL_TOPIC)
+        {
+          cmd_vel = reinterpret_cast<CmdVelMsg*>(buffer);
+          twist.linear.x = cmd_vel->linear_x;
+          twist.angular.z = cmd_vel->angular_z;
+          twist_publisher_.publish(twist);
+        }
+      }
+      sock.close();
+      ROS_INFO("Control client disconnected.");
     }
   }
 };  // namespace zerobot_plugin
