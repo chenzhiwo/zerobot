@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="key_teleop" type="key_teleop.py" name="key_teleop" args="" output="screen">
+    <remap from="key_vel" to="cmd_vel"/>
+  </node>
+
+  <!-- <node pkg="joy" type="joy_node" name="tele" args="" output="screen">
+    <param name="dev" type="string" value="/dev/input/js1"/>
+  </node> -->
+
+</launch>
