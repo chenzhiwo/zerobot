@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="base_manager" default="manager"/>
+
+  <node pkg="nodelet" type="nodelet" name="$(arg base_manager)" args="manager" output="screen"/>
+
+  <node pkg="nodelet" type="nodelet" name="logger" args="load zerobot_driver/Logger $(arg base_manager)" output="screen"/>
+
+  <node pkg="nodelet" type="nodelet" name="serial" args="load zerobot_driver/Serial $(arg base_manager)" output="screen">
+    <param name="serial_port" type="str" value="/dev/ttyUSB0"/>
+    <param name="baud_rate" type="int" value="921600"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="params" args="load zerobot_driver/Params $(arg base_manager)" output="screen">
+    <param name="service_timeout" type="int" value="100"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="base" args="load zerobot_driver/DiffDrive $(arg base_manager)" output="screen">
+    <param name="frame_id" type="str" value="base_footprint"/>
+    <param name="wheel_distance" type="double" value="0.265"/>
+    <remap from="base/cmd_vel" to="cmd_vel"/>
+    <remap from="base/odom" to="odom"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="teleop" args="load zerobot_plugin/Teleop $(arg base_manager)" output="screen">
+    <remap from="teleop/joy" to="joy"/>
+    <remap from="teleop/twist" to="cmd_vel"/>
+  </node>
+</launch>
