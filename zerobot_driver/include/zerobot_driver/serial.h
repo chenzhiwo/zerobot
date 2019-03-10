@@ -9,7 +9,7 @@
 #include <boost/thread.hpp>
 #include <zerobot_driver/plugin.h>
 
-#define START_SIGN 0xaa
+#define START_SIGN '\n'
 
 namespace zerobot_driver
 {
@@ -134,8 +134,9 @@ private:
       }
       boost::this_thread::interruption_point();
 
-      if (header.start + header.topic_id + header.length != header.checksum)
+      if ((header.start ^ header.topic_id ^ header.length) != header.checksum)
       {
+        ROS_INFO_STREAM("Header checksum Failed.");
         continue;
       }
 
@@ -149,6 +150,7 @@ private:
 
       if (crcCCITT(buffer, header.length) != checksum)
       {
+        ROS_INFO_STREAM("CRC Failed.");
         continue;
       }
 
@@ -179,7 +181,9 @@ private:
       header.start = START_SIGN;
       header.topic_id = buffer.tid();
       header.length = buffer.len();
-      header.checksum = header.start + header.topic_id + header.length;
+      header.checksum = (header.start ^ header.topic_id ^ header.length);
+
+      // ROS_INFO_STREAM(static_cast<uint16_t>(header.topic_id));
 
       checksum = crcCCITT(buffer.payload(), buffer.len());
 
