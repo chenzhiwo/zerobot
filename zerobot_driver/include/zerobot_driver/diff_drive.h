@@ -44,10 +44,10 @@ private:
   void subTwistCallback(geometry_msgs::TwistConstPtr twist)
   {
     MsgWheel wheel;
-    wheel.data[0] = twist->linear.x + (twist->angular.z * wheel_distance_) / 2;
-    wheel.data[1] = twist->linear.x - (twist->angular.z * wheel_distance_) / 2;
-    wheel.data[2] = twist->linear.x - (twist->angular.z * wheel_distance_) / 2;
-    wheel.data[3] = twist->linear.x + (twist->angular.z * wheel_distance_) / 2;
+    wheel.data[0] = twist->linear.x - (twist->angular.z * wheel_distance_) / 2;
+    wheel.data[1] = twist->linear.x + (twist->angular.z * wheel_distance_) / 2;
+    wheel.data[2] = twist->linear.x + (twist->angular.z * wheel_distance_) / 2;
+    wheel.data[3] = twist->linear.x - (twist->angular.z * wheel_distance_) / 2;
     msgPost(MSG_TOPIC_WHEEL, &wheel, sizeof(wheel));
   }
 
