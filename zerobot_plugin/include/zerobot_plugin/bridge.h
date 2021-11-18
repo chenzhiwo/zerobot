@@ -6,7 +6,7 @@
 #include <vector>
 #include <boost/circular_buffer.hpp>
 #include <boost/thread.hpp>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
@@ -128,7 +128,7 @@ private:
   ros::Subscriber imu_subscriber_;
   ros::Subscriber magnet_subscriber_;
 
-  boost::asio::io_service io_srv_;
+  asio::io_service io_srv_;
 
   ros::Time start_time_;
 
@@ -189,11 +189,11 @@ private:
   {
     NetworkHeader header;
     Buffer buffer;
-    std::array<boost::asio::const_buffer, 2> buffers;
-    buffers[0] = boost::asio::buffer(&header, sizeof(header));
-    boost::system::error_code ec;
-    boost::asio::ip::tcp::acceptor acceptor(io_srv_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1234));
-    boost::asio::ip::tcp::socket sock(io_srv_);
+    std::array<asio::const_buffer, 2> buffers;
+    buffers[0] = asio::buffer(&header, sizeof(header));
+    asio::error_code ec;
+    asio::ip::tcp::acceptor acceptor(io_srv_, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 1234));
+    asio::ip::tcp::socket sock(io_srv_);
 
     while (ros::ok())
     {
@@ -214,8 +214,8 @@ private:
         header.length = buffer.len();
         header.checksum = header.start + header.topic_id + header.length;
 
-        buffers[1] = boost::asio::buffer(buffer.payload(), buffer.len());
-        boost::asio::write(sock, buffers, ec);
+        buffers[1] = asio::buffer(buffer.payload(), buffer.len());
+        asio::write(sock, buffers, ec);
         if (ec)
         {
           break;
@@ -232,9 +232,9 @@ private:
     uint8_t buffer[254];
     CmdVelMsg* cmd_vel;
     geometry_msgs::Twist twist;
-    boost::system::error_code ec;
-    boost::asio::ip::tcp::acceptor acceptor(io_srv_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1233));
-    boost::asio::ip::tcp::socket sock(io_srv_);
+    asio::error_code ec;
+    asio::ip::tcp::acceptor acceptor(io_srv_, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 1233));
+    asio::ip::tcp::socket sock(io_srv_);
 
     while (ros::ok())
     {
@@ -243,7 +243,7 @@ private:
       ROS_INFO("Control client connected.");
       while (ros::ok())
       {
-        boost::asio::read(sock, boost::asio::buffer(&header.start, sizeof(header.start)), ec);
+        asio::read(sock, asio::buffer(&header.start, sizeof(header.start)), ec);
         if (ec)
         {
           break;
@@ -253,7 +253,7 @@ private:
           continue;
         }
 
-        boost::asio::read(sock, boost::asio::buffer(&header.start + 1, sizeof(header) - sizeof(header.start)), ec);
+        asio::read(sock, asio::buffer(&header.start + 1, sizeof(header) - sizeof(header.start)), ec);
         if (ec)
         {
           break;
@@ -263,7 +263,7 @@ private:
           continue;
         }
 
-        boost::asio::read(sock, boost::asio::buffer(&buffer, header.length), ec);
+        asio::read(sock, asio::buffer(&buffer, header.length), ec);
         if (ec)
         {
           break;
