@@ -42,11 +42,11 @@ public:
     magnet_publisher_ = pnh_.advertise<sensor_msgs::MagneticField>("magnet", 128);
 
     serial_.open(serial_port_);
-    serial_.set_option(boost::asio::serial_port::baud_rate(baud_rate_));
-    serial_.set_option(boost::asio::serial_port::flow_control(boost::asio::serial_port::flow_control::none));
-    serial_.set_option(boost::asio::serial_port::parity(boost::asio::serial_port::parity::none));
-    serial_.set_option(boost::asio::serial_port::stop_bits(boost::asio::serial_port::stop_bits::one));
-    serial_.set_option(boost::asio::serial_port::character_size(8));
+    serial_.set_option(asio::serial_port::baud_rate(baud_rate_));
+    serial_.set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none));
+    serial_.set_option(asio::serial_port::parity(asio::serial_port::parity::none));
+    serial_.set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one));
+    serial_.set_option(asio::serial_port::character_size(8));
 
     recv_thread_ = boost::thread(&WitImu::recvThread, this);
   }
@@ -71,8 +71,8 @@ private:
   ros::Publisher imu_publisher_;
   ros::Publisher magnet_publisher_;
 
-  boost::asio::io_service io_srv_;
-  boost::asio::serial_port serial_;
+  asio::io_service io_srv_;
+  asio::serial_port serial_;
 
   boost::thread recv_thread_;
 
@@ -103,14 +103,14 @@ private:
 
     while (ros::ok())
     {
-      boost::asio::read(serial_, boost::asio::buffer(&buffer.start, 1));
+      asio::read(serial_, asio::buffer(&buffer.start, 1));
       boost::this_thread::interruption_point();
       if (buffer.start != 0x55)
       {
         continue;
       }
 
-      boost::asio::read(serial_, boost::asio::buffer(&buffer.start + 1, sizeof(buffer) - sizeof(buffer.start)));
+      asio::read(serial_, asio::buffer(&buffer.start + 1, sizeof(buffer) - sizeof(buffer.start)));
       boost::this_thread::interruption_point();
 
       if (!checksum(&buffer))
