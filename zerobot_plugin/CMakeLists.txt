@@ -36,7 +36,9 @@ add_library(${PROJECT_NAME}
   include/zerobot_plugin/bridge.h
   include/zerobot_plugin/teleop.h
   include/zerobot_plugin/wit_imu.h
-  src/nodelet.cpp
+  src/bridge.cpp
+  src/teleop.cpp
+  src/wit_imu.cpp
 )
 
 target_compile_definitions(${PROJECT_NAME}

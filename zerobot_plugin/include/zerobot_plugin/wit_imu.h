@@ -5,7 +5,7 @@
 
 #include <string>
 #include <boost/thread.hpp>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
