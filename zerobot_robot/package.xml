@@ -5,7 +5,7 @@
   <description>The zerobot package</description>
   <author email="chenzhiwo@139.com">Chengzhi Chen</author>
   <maintainer email="chenzhiwo@139.com">Chengzhi Chen</maintainer>
-  <license>BSD</license>
+  <license>GPLv3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
