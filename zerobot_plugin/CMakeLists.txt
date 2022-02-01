@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_compile_options(-Wall -Wextra)
 
+find_package(Boost REQUIRED COMPONENTS thread)
+
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
@@ -21,22 +23,31 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES zerobot_plugin
   CATKIN_DEPENDS geometry_msgs nav_msgs nodelet roscpp roslint sensor_msgs
+  DEPENDS Boost asio
 )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${asio_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}
   include/zerobot_plugin/bridge.h
   include/zerobot_plugin/teleop.h
   include/zerobot_plugin/wit_imu.h
-  src/nodelet.cpp
+  src/bridge.cpp
+  src/teleop.cpp
+  src/wit_imu.cpp
+)
+
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE ASIO_STANDALONE
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${asio_LIBRARIES}
 )
 
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/*.h)

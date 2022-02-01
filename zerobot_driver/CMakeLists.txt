@@ -29,7 +29,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES zerobot_driver
   CATKIN_DEPENDS diagnostic_msgs diagnostic_updater geometry_msgs nav_msgs nodelet roscpp roslint sensor_msgs std_msgs tf2_ros zerobot_msgs
-  DEPENDS Boost
+  DEPENDS Boost asio
 )
 
 list(GET zerobot_msgs_MESSAGE_FILES 0 MESSAGE_FILE)
@@ -41,6 +41,7 @@ genmsg(${MESSAGE_HEADER} ${MESSAGE_FILES})
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${asio_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}
@@ -58,8 +59,13 @@ add_library(${PROJECT_NAME}
   src/plugin.cpp
 )
 
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE ASIO_STANDALONE
+)
+
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${asio_LIBRARIES}
 )
 
 add_dependencies(${PROJECT_NAME}
