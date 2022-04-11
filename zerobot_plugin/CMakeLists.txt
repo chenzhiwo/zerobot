@@ -23,7 +23,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES zerobot_plugin
   CATKIN_DEPENDS geometry_msgs nav_msgs nodelet roscpp roslint sensor_msgs
-  DEPENDS Boost asio
+  DEPENDS Boost
 )
 
 include_directories(

@@ -29,7 +29,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES zerobot_driver
   CATKIN_DEPENDS diagnostic_msgs diagnostic_updater geometry_msgs nav_msgs nodelet roscpp roslint sensor_msgs std_msgs tf2_ros zerobot_msgs
-  DEPENDS Boost asio
+  DEPENDS Boost
 )
 
 list(GET zerobot_msgs_MESSAGE_FILES 0 MESSAGE_FILE)
